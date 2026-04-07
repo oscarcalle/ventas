@@ -128,7 +128,7 @@ export default {
     Incorrect_Login: 'Inicio de sesión incorrecto',
     Successfully_Logged_In: 'Inicio de sesión exitoso',
     This_user_not_active: 'Esta usuaria no activa',
-    SignIn: 'Registrarse',
+    SignIn: 'Iniciar Sesión',
     Create_an_account: 'Crea una cuenta',
     Forgot_Password: 'Has olvidado tu contraseña ?',
     Email_Address: 'Dirección de correo electrónico',
