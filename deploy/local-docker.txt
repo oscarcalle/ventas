@@ -1,0 +1,57 @@
+Docker local (desarrollo)
+========================
+Imagen PHP 8.0-FPM (alineada con Namecheap si usas PHP 8.0).
+
+1) Copiar entorno:
+   cp .env.example .env
+
+2) Levantar contenedores:
+   docker compose up -d --build
+
+3) Instalar dependencias PHP (primera vez o tras cambios en composer.json):
+   docker compose exec app composer install
+
+4) Clave de aplicación:
+   docker compose exec app php artisan key:generate
+
+5) Permisos de Laravel (Linux):
+   docker compose exec app chmod -R ug+rwx storage bootstrap/cache
+
+6) Abrir en el navegador:
+   http://localhost:8080
+
+   Si la app no está instalada, seguir el asistente /setup. La base MySQL es la del servicio "mysql"
+   (host mysql, usuario/contraseña como en .env.example).
+
+7) Assets JS/CSS (si modificas resources/):
+   npm install && npm run dev
+   (si existe package-lock.json puedes usar npm ci; npm en el host)
+
+8) Detener:
+   docker compose down
+
+
+Build orientado a producción (antes de subir a Namecheap)
+---------------------------------------------------------
+Script (con Docker en marcha: docker compose up -d):
+
+  ./deploy/package-for-namecheap.sh
+
+Si no tienes PHP instalado en el PC, el script usa solo "composer" dentro del
+contenedor "app" automáticamente.
+
+Sin compilar JS en ese momento:
+
+  SKIP_NPM=1 ./deploy/package-for-namecheap.sh
+
+Manual equivalente, con contenedores en marcha y .env configurado:
+
+  docker compose exec app composer install --no-dev --optimize-autoloader --no-interaction
+  docker compose exec app php artisan config:cache
+  docker compose exec app php artisan view:cache
+
+En el host (requiere Node):
+
+  npm install && npm run production
+
+No uses "php artisan route:cache" en este proyecto (rutas con closures).

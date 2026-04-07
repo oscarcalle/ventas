@@ -1,0 +1,40 @@
+Despliegue en Namecheap (Stellar) — factura.liversoft.com
+=====================================================
+
+Requisitos en cPanel: PHP 7.3–8.0 (recomendado 7.4 u 8.0), extensiones comunes
+(gd, mbstring, openssl, pdo_mysql, tokenizer, xml, ctype, json, zip, bcmath, intl, curl, fileinfo).
+
+1) Dominio
+   - En "Dominios" / "Subdominios", apunta factura.liversoft.com al directorio correcto.
+   - El document root debe ser la carpeta "public" de Laravel (no la raíz del proyecto).
+
+2) Base de datos
+   - Crea una base MySQL y un usuario con todos los privilegios sobre esa base.
+   - Anota host (suele ser localhost), nombre de BD, usuario y contraseña.
+
+3) Archivos
+   - Sube por FTP o Administrador de archivos el proyecto completo EXCEPTO:
+     node_modules/, .git/, tests/ (opcional), archivos .md que no necesites.
+   - En el servidor puedes ejecutar "composer install --no-dev --optimize-autoloader"
+     desde SSH si tu plan lo permite; si no, genera vendor en local y sube la carpeta vendor.
+
+4) .env en el servidor
+   - Copia .env.production.example a .env y rellena APP_KEY, DB_*, APP_URL=https://factura.liversoft.com
+   - Genera clave: php artisan key:generate
+
+5) Permisos (SSH o asistente de permisos en cPanel)
+   - storage/ y bootstrap/cache/ deben ser escribibles por el usuario del servidor web (p. ej. 755 o 775).
+
+6) Artisan (SSH)
+   - php artisan storage:link
+   - php artisan migrate --force   (tras backup)
+   - Si usas Passport API: php artisan passport:install --force
+   - php artisan config:cache
+   - php artisan view:cache
+   - No uses php artisan route:cache si hay rutas con funciones anónimas (este proyecto las tiene).
+
+7) HTTPS
+   - Activa SSL gratuito (Let's Encrypt) en cPanel para factura.liversoft.com.
+
+8) Primera instalación
+   - Si no existe storage/app/public/installed, la app mostrará el asistente /setup en el navegador.

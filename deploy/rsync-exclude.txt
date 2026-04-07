@@ -1,0 +1,14 @@
+.git/
+.gitignore
+.idea/
+.vscode/
+node_modules/
+tests/
+.phpunit.result.cache
+.php_cs.cache
+.env
+deploy/*.zip
+storage/logs/*
+!storage/logs/.gitignore
+*.log
+.DS_Store

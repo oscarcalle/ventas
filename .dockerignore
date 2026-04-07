@@ -1,0 +1,16 @@
+.git
+.gitignore
+.idea
+.vscode
+node_modules
+vendor
+storage/logs/*
+!storage/logs/.gitignore
+bootstrap/cache/*
+!bootstrap/cache/.gitignore
+.env
+.env.*
+!.env.example
+!.env.production.example
+*.md
+docker-compose.override.yml
