@@ -2,6 +2,10 @@
 
 Es posible: cada `git push` a una rama (p. ej. `main`) puede disparar un **GitHub Action** que actualice el hosting. Namecheap no tiene integración nativa con GitHub; el “pegamento” es el workflow.
 
+**Este repositorio** (`.github/workflows/deploy.yml`) usa **SSH + rsync**: en GitHub Actions se ejecutan `composer` y `npm run production`, y el resultado se sincroniza al servidor con `rsync` (sin `--delete`, para no borrar ficheros que solo existan en el servidor, p. ej. subidas). Después se conecta por SSH y ejecuta `artisan migrate`, `config:cache` y `view:cache`.
+
+Secrets necesarios: `SSH_HOST`, `SSH_USER`, `SSH_PATH`, `SSH_PRIVATE_KEY`; opcionales `SSH_PORT` (a menudo **21098** en Stellar) y `SSH_PHP` si el comando `php` del servidor no es el correcto.
+
 ## Qué necesitas
 
 | Requisito | Para qué sirve |

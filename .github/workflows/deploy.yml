@@ -1,0 +1,100 @@
+# Despliegue automático a Namecheap por SSH (rsync) al hacer push a main.
+#
+# Secrets → Settings → Secrets and variables → Actions:
+#   SSH_HOST         → Host SSH (ej. serverNNN.hosting.com o IP de Namecheap)
+#   SSH_USER         → Usuario SSH (cPanel)
+#   SSH_PATH         → Ruta absoluta del proyecto en el servidor (sin barra final), ej. /home/USUARIO/factura.liversoft.com
+#   SSH_PRIVATE_KEY  → Clave privada completa (PEM), la pública en ~/.ssh/authorized_keys del servidor
+#   SSH_PORT         → (opcional) Puerto SSH; en Stellar suele ser 21098. Si no lo defines, se usa 22.
+#   SSH_PHP          → (opcional) Binario PHP en el servidor si `php` no es 8.x, ej. /usr/local/bin/ea-php80
+#
+# Sin --delete en rsync: no se borran en el servidor ficheros que no existen en el repo (p. ej. subidas en storage).
+# El .env no se sube (está en rsync-exclude); debe existir solo en el servidor.
+# Document root del dominio en cPanel: .../public
+
+name: Deploy to Namecheap
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-namecheap
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.0"
+          extensions: mbstring, dom, fileinfo, pdo_mysql, zip, gd, intl, bcmath, exif, calendar
+          coverage: none
+          tools: composer:v2
+
+      - name: .env temporal para CI
+        run: |
+          cp .env.example .env
+          KEY="base64:$(openssl rand -base64 32 | tr -d '\n')"
+          sed -i "s|^APP_KEY=.*|APP_KEY=${KEY}|" .env
+
+      - name: Composer (producción)
+        run: composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: NPM build
+        run: |
+          npm ci
+          npm run production
+
+      - name: ssh-agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Known hosts
+        run: |
+          mkdir -p ~/.ssh
+          HOST="${{ secrets.SSH_HOST }}"
+          PORT="${{ secrets.SSH_PORT }}"
+          [ -z "$PORT" ] && PORT=22
+          ssh-keyscan -p "$PORT" -H "$HOST" >> ~/.ssh/known_hosts
+
+      - name: Rsync a servidor
+        run: |
+          HOST="${{ secrets.SSH_HOST }}"
+          USER="${{ secrets.SSH_USER }}"
+          REMOTE="${{ secrets.SSH_PATH }}"
+          PORT="${{ secrets.SSH_PORT }}"
+          [ -z "$PORT" ] && PORT=22
+          rsync -avz \
+            -e "ssh -p $PORT -o StrictHostKeyChecking=yes" \
+            --exclude-from=deploy/rsync-exclude.txt \
+            ./ "${USER}@${HOST}:${REMOTE}/"
+
+      - name: Artisan en servidor (cachés)
+        env:
+          SSH_PHP: ${{ secrets.SSH_PHP }}
+        run: |
+          HOST="${{ secrets.SSH_HOST }}"
+          USER="${{ secrets.SSH_USER }}"
+          REMOTE="${{ secrets.SSH_PATH }}"
+          PORT="${{ secrets.SSH_PORT }}"
+          PHP_BIN="${SSH_PHP:-php}"
+          [ -z "$PORT" ] && PORT=22
+          ssh -p "$PORT" -o StrictHostKeyChecking=yes "${USER}@${HOST}" \
+            "cd '${REMOTE}' && ${PHP_BIN} artisan migrate --force && ${PHP_BIN} artisan config:cache && ${PHP_BIN} artisan view:cache"
