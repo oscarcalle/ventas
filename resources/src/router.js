@@ -1131,7 +1131,7 @@ router.beforeEach((to, from, next) => {
         i18n.locale = store.state.language.language;
         next();
     } else if (!store.state.language.language) {
-        store.dispatch("language/setLanguage", navigator.languages).then(() => {
+        store.dispatch("language/setLanguage", "es").then(() => {
             i18n.locale = store.state.language.language;
             next();
         });

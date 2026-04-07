@@ -91,7 +91,10 @@ class UserController extends BaseController
         $user['username'] = Auth::user()->username;
         $user['currency'] = $helpers->Get_Currency();
         $user['logo'] = Setting::first()->logo;
-        $user['default_language'] = Setting::first()->default_language;
+        $settings = Setting::first();
+        $user['default_language'] = ($settings && $settings->default_language)
+            ? $settings->default_language
+            : 'es';
         $user['footer'] = Setting::first()->footer;
         $user['developed_by'] = Setting::first()->developed_by;
         $permissions = Auth::user()->roles()->first()->permissions->pluck('name');

@@ -223,7 +223,7 @@ class SettingsController extends Controller
             $item['logo'] = $settings->logo;
             $item['footer'] = $settings->footer;
             $item['developed_by'] = $settings->developed_by;
-            $item['default_language'] = $settings->default_language;
+            $item['default_language'] = $settings->default_language ?: 'es';
             $item['is_invoice_footer'] = $settings->is_invoice_footer;
             $item['invoice_footer'] = $settings->invoice_footer;
             $item['quotation_with_stock'] = $settings->quotation_with_stock;
