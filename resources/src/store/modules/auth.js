@@ -16,7 +16,7 @@ const state = {
     loading: false,
     error: null,
     notifs:0,
-    Default_Language:'en',
+    Default_Language:'es',
 };
 
 
@@ -94,7 +94,7 @@ const actions = {
             context.commit('setallmodules', null)
             context.commit('setUser', null)
             context.commit('Notifs_alert', null)
-            context.commit('SetDefaultLanguage', 'en')
+            context.commit('SetDefaultLanguage', 'es')
         });
     },
 

@@ -75,7 +75,7 @@ class SettingsController extends Controller
         if ($request['default_language'] != 'null') {
             $default_language = $request['default_language'];
         } else {
-            $default_language = 'en';
+            $default_language = 'es';
         }
 
         if($request['is_invoice_footer'] == '1' || $request['is_invoice_footer'] == 'true'){

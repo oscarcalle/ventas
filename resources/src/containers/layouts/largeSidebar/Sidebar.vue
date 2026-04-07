@@ -723,16 +723,6 @@
             </router-link>
           </li>
 
-            <li
-            class="nav-item"
-            v-if="currentUserPermissions && currentUserPermissions.includes('setting_system')"
-          >
-            <router-link tag="a" class to="/app/settings/update_settings">
-              <i class="nav-icon i-Upgrade"></i>
-              <span class="item-name">{{$t('update_settings')}}</span>
-            </router-link>
-          </li>
-
            <li
             class="nav-item"
             v-if="currentUserPermissions && currentUserPermissions.includes('payment_gateway')"

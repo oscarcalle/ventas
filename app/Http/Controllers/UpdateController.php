@@ -39,20 +39,11 @@ class UpdateController extends Controller
 
     /*
     * Check if a new Update exist.
+    * Remote check disabled (no call to author server).
     */
     public function check()
     {
-        $lastVersionInfo = $this->getLastVersion();
-        if( version_compare($lastVersionInfo['version'], $this->getCurrentVersion(), ">") )
-            return $lastVersionInfo['version'];
-
         return '';
-    }
-
-    private function getLastVersion(){
-        $content = file_get_contents('https://update-stocky.ui-lib.com/stocky_version.json');
-        $content = json_decode($content, true);
-        return $content;
     }
 
     
