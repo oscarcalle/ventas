@@ -32,7 +32,7 @@
         <login-component></login-component>
       </div>
 
-      <script src="/js/login.min.js?v=4.0.6"></script>
+      <script src="{{ url('js/login.min.js') }}?v={{ filemtime(public_path('js/login.min.js')) }}"></script>
   </body>
 </html>
 
