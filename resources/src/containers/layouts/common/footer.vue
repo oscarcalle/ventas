@@ -12,7 +12,7 @@
         class="footer-bottom border-top pt-3 d-flex flex-column flex-sm-row align-items-center"
       >
         <div class="d-flex align-items-center">
-          <img class="logo" :src="'/images/'+currentUser.logo" alt width="60" height="60">
+          <img class="logo" :src="logoSrc" alt width="60" height="60">
           <div>
             <div>
               <p class="m-0">&copy; {{ new Date().getFullYear() }} {{$t('developed_by')}} {{currentUser.developed_by}}</p>
@@ -37,6 +37,15 @@ export default {
      ...mapGetters([
        "currentUser",
     ]),
+
+    logoSrc() {
+      const u = this.currentUser;
+      if (!u || !u.logo) {
+        return "/images/logo-default.png";
+      }
+      const v = u.logo_version != null && u.logo_version !== undefined ? u.logo_version : "";
+      return "/images/" + u.logo + (v !== "" ? "?v=" + v : "");
+    },
   },
 
   methods: {}

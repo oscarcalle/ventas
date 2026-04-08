@@ -22,16 +22,17 @@
     <!-- built files will be auto injected -->
     <div class="loading_wrap" id="loading_wrap">
       <div class="loader_logo">
-      <img src="/images/logo.png" class="" alt="logo" />
+      <img src="{{ url('images/logo.png') }}?v={{ filemtime(public_path('images/logo.png')) }}" class="" alt="logo" />
 
       </div>
 
       <div class="loading"></div>
     </div>
-    <div id="login">
+      <div id="login">
         <login-component></login-component>
       </div>
 
+      <script>window.__logoVersion = {{ filemtime(public_path('images/logo.png')) }};</script>
       <script src="{{ url('js/login.min.js') }}?v={{ filemtime(public_path('js/login.min.js')) }}"></script>
   </body>
 </html>

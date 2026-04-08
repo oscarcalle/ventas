@@ -90,13 +90,16 @@ class UserController extends BaseController
         $user['avatar'] = Auth::user()->avatar;
         $user['username'] = Auth::user()->username;
         $user['currency'] = $helpers->Get_Currency();
-        $user['logo'] = Setting::first()->logo;
         $settings = Setting::first();
+        $logoFile = $settings->logo ?: 'logo-default.png';
+        $user['logo'] = $logoFile;
+        $logoPath = public_path('images/'.$logoFile);
+        $user['logo_version'] = is_file($logoPath) ? filemtime($logoPath) : time();
         $user['default_language'] = ($settings && $settings->default_language)
             ? $settings->default_language
             : 'es';
-        $user['footer'] = Setting::first()->footer;
-        $user['developed_by'] = Setting::first()->developed_by;
+        $user['footer'] = $settings->footer;
+        $user['developed_by'] = $settings->developed_by;
         $permissions = Auth::user()->roles()->first()->permissions->pluck('name');
         $products_alerts = product_warehouse::join('products', 'product_warehouse.product_id', '=', 'products.id')
             ->whereRaw('qte <= stock_alert')

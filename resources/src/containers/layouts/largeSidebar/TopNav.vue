@@ -2,7 +2,7 @@
   <div class="main-header">
     <div class="logo">
        <router-link to="/app/dashboard">
-        <img :src="'/images/'+currentUser.logo" alt width="60" height="60">
+        <img :src="logoSrc" alt width="60" height="60">
        </router-link>
     </div>
 
@@ -276,6 +276,14 @@ export default {
       "notifs_alert",
     ]),
 
+    logoSrc() {
+      const u = this.currentUser;
+      if (!u || !u.logo) {
+        return "/images/logo-default.png";
+      }
+      const v = u.logo_version != null && u.logo_version !== undefined ? u.logo_version : "";
+      return "/images/" + u.logo + (v !== "" ? "?v=" + v : "");
+    },
 
   },
 

@@ -6,7 +6,7 @@
           <div class="col-md-12">
             <div class="p-4">
               <div class="auth-logo text-center mb-30">
-                <img :src="'/images/logo.png'" alt>
+                <img :src="logoUrl" alt>
               </div>
               <h1 class="mb-3 text-18">{{$t('Forgot_Password')}}</h1>
               <validation-observer ref="Reset_password">
@@ -64,6 +64,15 @@ export default {
       email: "",
       loading: false
     };
+  },
+  computed: {
+    logoUrl() {
+      const v =
+        typeof window !== "undefined" && window.__logoVersion != null
+          ? window.__logoVersion
+          : "";
+      return "/images/logo.png" + (v !== "" ? "?v=" + v : "");
+    }
   },
   methods: {
     //------------- Submit Reset Password
