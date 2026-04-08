@@ -66,35 +66,49 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      # Normaliza espacios/saltos y valida que SSH_HOST sea solo hostname o IP (getaddrinfo falla si hay URL o ruta).
+      - name: Comprobar secrets SSH
+        env:
+          SSH_HOST_IN: ${{ secrets.SSH_HOST }}
+          SSH_USER_IN: ${{ secrets.SSH_USER }}
+          SSH_PATH_IN: ${{ secrets.SSH_PATH }}
+          SSH_PORT_IN: ${{ secrets.SSH_PORT }}
+        run: |
+          trim() { printf '%s' "$1" | tr -d '\r\n' | xargs; }
+          H=$(trim "$SSH_HOST_IN")
+          U=$(trim "$SSH_USER_IN")
+          R=$(trim "$SSH_PATH_IN")
+          PI=$(trim "$SSH_PORT_IN")
+          [ -z "$PI" ] && PI=22
+          if [ -z "$H" ]; then echo "::error::SSH_HOST vacío. Debe ser solo el hostname o la IP (ej. server123.hosting.com), sin https://"; exit 1; fi
+          case "$H" in *://*|*/*)
+            echo "::error::SSH_HOST no debe ser una URL ni una ruta. Usa solo hostname o IP en SSH_HOST; la carpeta del proyecto va en SSH_PATH."
+            exit 1
+            ;;
+          esac
+          if [ -z "$U" ]; then echo "::error::SSH_USER vacío"; exit 1; fi
+          if [ -z "$R" ]; then echo "::error::SSH_PATH vacío"; exit 1; fi
+          echo "SSH_HOST=$H" >> "$GITHUB_ENV"
+          echo "SSH_USER=$U" >> "$GITHUB_ENV"
+          echo "SSH_PATH=$R" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$PI" >> "$GITHUB_ENV"
+
       - name: Known hosts
         run: |
           mkdir -p ~/.ssh
-          HOST="${{ secrets.SSH_HOST }}"
-          PORT="${{ secrets.SSH_PORT }}"
-          [ -z "$PORT" ] && PORT=22
-          ssh-keyscan -p "$PORT" -H "$HOST" >> ~/.ssh/known_hosts
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts
 
       - name: Rsync a servidor
         run: |
-          HOST="${{ secrets.SSH_HOST }}"
-          USER="${{ secrets.SSH_USER }}"
-          REMOTE="${{ secrets.SSH_PATH }}"
-          PORT="${{ secrets.SSH_PORT }}"
-          [ -z "$PORT" ] && PORT=22
           rsync -avz \
-            -e "ssh -p $PORT -o StrictHostKeyChecking=yes" \
+            -e "ssh -p $SSH_PORT -o StrictHostKeyChecking=yes" \
             --exclude-from=deploy/rsync-exclude.txt \
-            ./ "${USER}@${HOST}:${REMOTE}/"
+            ./ "${SSH_USER}@${SSH_HOST}:${SSH_PATH}/"
 
       - name: Artisan en servidor (cachés)
         env:
           SSH_PHP: ${{ secrets.SSH_PHP }}
         run: |
-          HOST="${{ secrets.SSH_HOST }}"
-          USER="${{ secrets.SSH_USER }}"
-          REMOTE="${{ secrets.SSH_PATH }}"
-          PORT="${{ secrets.SSH_PORT }}"
           PHP_BIN="${SSH_PHP:-php}"
-          [ -z "$PORT" ] && PORT=22
-          ssh -p "$PORT" -o StrictHostKeyChecking=yes "${USER}@${HOST}" \
-            "cd '${REMOTE}' && ${PHP_BIN} artisan migrate --force && ${PHP_BIN} artisan config:cache && ${PHP_BIN} artisan view:cache"
+          ssh -p "$SSH_PORT" -o StrictHostKeyChecking=yes "${SSH_USER}@${SSH_HOST}" \
+            "cd '${SSH_PATH}' && ${PHP_BIN} artisan migrate --force && ${PHP_BIN} artisan config:cache && ${PHP_BIN} artisan view:cache"
