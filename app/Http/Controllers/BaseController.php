@@ -83,6 +83,9 @@ class BaseController extends Controller
     // Set config mail
     public function Set_config_mail()
     {
+        if (! config('mail.use_database')) {
+            return;
+        }
 
         $server = DB::table('servers')->where('deleted_at', '=', null)->first();
         $settings = DB::table('settings')->where('deleted_at', '=', null)->first();
